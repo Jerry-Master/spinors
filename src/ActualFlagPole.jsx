@@ -3,7 +3,13 @@ import { TextureLoader, Quaternion, Euler, DoubleSide, SphereGeometry } from 'th
 import { useLoader } from '@react-three/fiber'
 import flagTexture from './Assets/jumbotron.jpg'
 
-function ActualFlagPole({ position, radius, poleQuaternion, setPoleQuaternion, setTrigger }) {
+function getUMatrix(q) {
+  const alpha = {x: q.w, y: q.z}
+  const beta = {x: -q.y, y: q.x}
+  return [alpha, beta]
+}
+
+function ActualFlagPole({ position, radius, poleQuaternion, setPoleQuaternion, setTrigger, setAlpha, setBeta }) {
   // Global state
   const clicked = useRef(false)
   const poleRef = useRef()
@@ -25,6 +31,9 @@ function ActualFlagPole({ position, radius, poleQuaternion, setPoleQuaternion, s
 
       setPoleQuaternion((prev) => {
         poleRef.current.quaternion.multiplyQuaternions(deltaPoleQuaternion, prev)
+        const [_alpha, _beta] = getUMatrix(poleRef.current.quaternion)
+        setAlpha(_alpha)
+        setBeta(_beta)
         return poleRef.current.quaternion
       })
 
@@ -50,6 +59,9 @@ function ActualFlagPole({ position, radius, poleQuaternion, setPoleQuaternion, s
 
       setPoleQuaternion((prev) => {
         poleRef.current.quaternion.multiplyQuaternions(deltaPoleQuaternion, prev)
+        const [_alpha, _beta] = getUMatrix(poleRef.current.quaternion)
+        setAlpha(_alpha)
+        setBeta(_beta)
         return poleRef.current.quaternion
       })
 
@@ -98,6 +110,9 @@ function ActualFlagPole({ position, radius, poleQuaternion, setPoleQuaternion, s
       poleRef.current.quaternion.multiplyQuaternions(prev, deltaFlagQuaternion)
       return poleRef.current.quaternion
     })
+    const [_alpha, _beta] = getUMatrix(poleQuaternion)
+    setAlpha(_alpha)
+    setBeta(_beta)
     
     setTrigger(x => !x)
   }

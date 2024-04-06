@@ -28,13 +28,7 @@ function Axis({ radius }) {
   )
 }
 
-function getUMatrix(q) {
-  const alpha = {x: q.w, y: q.z}
-  const beta = {x: -q.y, y: q.x}
-  return [alpha, beta]
-}
-
-function Spinor({ poleQuaternion, trigger }) {
+function Spinor({ poleQuaternion, trigger, alpha, beta }) {
   const containerRef = useRef();
   const [radius, setRadius] = useState();
 
@@ -52,16 +46,6 @@ function Spinor({ poleQuaternion, trigger }) {
     window.addEventListener('resize', updateRadius);
     return () => window.removeEventListener('resize', updateRadius);
   }, []);
-
-  const [alpha, setAlpha] = useState({x: 1, y: 0})
-  const [beta, setBeta] = useState({x: 0, y: 0})
-
-  useEffect(() => {
-    const [_alpha, _beta] = getUMatrix(poleQuaternion)
-    setAlpha(_alpha)
-    setBeta(_beta)
-  }, [poleQuaternion, trigger])
-
 
   return <div ref={containerRef} className='spinor'>
     <Canvas orthographic camera={{zoom: 1, position: [0, 0, 1000]}}>

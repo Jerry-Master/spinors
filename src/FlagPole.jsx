@@ -2,7 +2,7 @@ import ActualFlagPole from './ActualFlagPole.jsx'
 import { Canvas } from '@react-three/fiber'
 import { useRef, useEffect, useState } from 'react'
 
-function FlagPole({ poleQuaternion, setPoleQuaternion, setTrigger }) {
+function FlagPole({ poleQuaternion, setPoleQuaternion, setTrigger, setAlpha, setBeta }) {
   const containerRef = useRef();
   const [radius, setRadius] = useState();
 
@@ -26,7 +26,14 @@ function FlagPole({ poleQuaternion, setPoleQuaternion, setTrigger }) {
       <ambientLight intensity={Math.PI / 2} />
       <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
       <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} />
-      <ActualFlagPole position={[0, 0, 0]} radius={radius} poleQuaternion={poleQuaternion} setPoleQuaternion={setPoleQuaternion} setTrigger={setTrigger} />
+      <ActualFlagPole 
+      position={[0, 0, 0]} 
+      radius={radius} 
+      poleQuaternion={poleQuaternion} 
+      setPoleQuaternion={setPoleQuaternion} 
+      setTrigger={setTrigger}
+      setAlpha={setAlpha}
+      setBeta={setBeta} />
     </Canvas>
   </div>
 }
