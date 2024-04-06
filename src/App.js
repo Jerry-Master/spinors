@@ -1,7 +1,7 @@
 import FlagPole from './FlagPole'
 import Spinor from './Spinor'
 import './App.css'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Quaternion } from 'three'
 
 function App() {

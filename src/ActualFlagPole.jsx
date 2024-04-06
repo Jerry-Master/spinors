@@ -15,8 +15,32 @@ function ActualFlagPole({ position, radius, poleQuaternion, setPoleQuaternion, s
 
   // Update Pole rotation on mouse drag
   const handlePointerMove = (e) => {
-    e.preventDefault()
 
+    if (clicked.current){
+      let deltaX = e.movementX || e.mozMovementX || e.webkitMovementX || 0
+      let deltaY = e.movementY || e.mozMovementY || e.webkitMovementY || 0
+
+      const deltaPoleQuaternion = new Quaternion()
+        .setFromEuler(new Euler(toRadians(deltaY * 0.5), toRadians(deltaX * 0.5), 0, 'XYZ'))
+
+      setPoleQuaternion((prev) => {
+        poleRef.current.quaternion.multiplyQuaternions(deltaPoleQuaternion, prev)
+        return poleRef.current.quaternion
+      })
+
+      setTrigger(x => !x)
+    }
+  }
+  const previousTouch = useRef()
+  const handleTouchMove = (e) => {
+    const touch = e.touches[0]
+
+    if (previousTouch.current) {
+        // be aware that these only store the movement of the first touch in the touches array
+        e.movementX = touch.pageX - previousTouch.current.pageX
+        e.movementY = touch.pageY - previousTouch.current.pageY
+    };
+    previousTouch.current = touch
     if (clicked.current){
       let deltaX = e.movementX || e.mozMovementX || e.webkitMovementX || 0
       let deltaY = e.movementY || e.mozMovementY || e.webkitMovementY || 0
@@ -39,6 +63,7 @@ function ActualFlagPole({ position, radius, poleQuaternion, setPoleQuaternion, s
     window.addEventListener('pointerup', handlePointerUp)
     // Add also the pointer move listener
     window.addEventListener('pointermove', handlePointerMove)
+    window.addEventListener('touchmove', handleTouchMove)
   }
 
   const handlePointerUp = () => {
@@ -47,6 +72,7 @@ function ActualFlagPole({ position, radius, poleQuaternion, setPoleQuaternion, s
     window.removeEventListener('pointerup', handlePointerUp)
     // Remove also the point move listener
     window.removeEventListener('pointermove', handlePointerMove)
+    window.removeEventListener('touchmove', handleTouchMove)
   }
 
   // Clean up the global event listeners when the component unmounts
@@ -54,6 +80,7 @@ function ActualFlagPole({ position, radius, poleQuaternion, setPoleQuaternion, s
     return () => {
       window.removeEventListener('pointerup', handlePointerUp)
       window.removeEventListener('pointermove', handlePointerMove)
+      window.removeEventListener('touchmove', handleTouchMove)
     }
   }, [])
 
@@ -74,6 +101,13 @@ function ActualFlagPole({ position, radius, poleQuaternion, setPoleQuaternion, s
     
     setTrigger(x => !x)
   }
+
+  useEffect(() => {
+    window.addEventListener('touchstart', handlePointerDown)
+    window.addEventListener("touchend", (e) => {
+      previousTouch.current = null;
+  });
+  }, [])
 
   return (
     <mesh 
