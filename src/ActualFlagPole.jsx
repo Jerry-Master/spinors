@@ -1,9 +1,9 @@
-import { React, useState, useRef, useEffect } from 'react'
-import { TextureLoader, Quaternion, Euler, DoubleSide, Vector3, LineSegments, SphereGeometry } from 'three'
+import { React, useRef, useEffect } from 'react'
+import { TextureLoader, Quaternion, Euler, DoubleSide, SphereGeometry } from 'three'
 import { useLoader } from '@react-three/fiber'
 import flagTexture from './Assets/jumbotron.jpg'
 
-function ActualFlagPole({ position, radius}) {
+function ActualFlagPole({ position, radius, poleQuaternion, setPoleQuaternion, setTrigger }) {
   // Global state
   const clicked = useRef(false)
   const poleRef = useRef()
@@ -11,8 +11,6 @@ function ActualFlagPole({ position, radius}) {
   // Load a texture
   const texture = useLoader(TextureLoader, flagTexture)
   
-  // Initial rotation state
-  const [poleQuaternion, setPoleQuaternion] = useState(new Quaternion())
   const toRadians = (angle) => angle * (Math.PI / 180)
 
   // Update Pole rotation on mouse drag
@@ -30,6 +28,8 @@ function ActualFlagPole({ position, radius}) {
         poleRef.current.quaternion.multiplyQuaternions(deltaPoleQuaternion, prev)
         return poleRef.current.quaternion
       })
+
+      setTrigger(x => !x)
     }
   }
 
@@ -42,8 +42,6 @@ function ActualFlagPole({ position, radius}) {
   }
 
   const handlePointerUp = () => {
-    console.log(poleQuaternion)
-    console.log('direction:', new Vector3(0, 1, 0).applyQuaternion(poleQuaternion))
     clicked.current = false
     // Remove the global event listener for pointerup when the mouse is released
     window.removeEventListener('pointerup', handlePointerUp)
@@ -67,12 +65,14 @@ function ActualFlagPole({ position, radius}) {
   // Update Flag rotation on mouse wheel
   const handleWheel = (e) => {    
     const deltaFlagQuaternion = new Quaternion()
-        .setFromEuler(new Euler(0, toRadians(e.deltaY * 0.001), 0, 'XYZ'))
+        .setFromEuler(new Euler(0, toRadians(e.deltaY * 0.00005), 0, 'XYZ'))
 
     setPoleQuaternion((prev) => {
       poleRef.current.quaternion.multiplyQuaternions(prev, deltaFlagQuaternion)
       return poleRef.current.quaternion
     })
+    
+    setTrigger(x => !x)
   }
 
   return (

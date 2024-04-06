@@ -1,10 +1,8 @@
-import Box from './Box.jsx' 
-import Sphere from './Sphere.jsx'
 import ActualFlagPole from './ActualFlagPole.jsx'
 import { Canvas } from '@react-three/fiber'
 import { useRef, useEffect, useState } from 'react'
 
-function FlagPole() {
+function FlagPole({ poleQuaternion, setPoleQuaternion, setTrigger }) {
   const containerRef = useRef();
   const [radius, setRadius] = useState();
 
@@ -14,7 +12,6 @@ function FlagPole() {
         const containerWidth = containerRef.current.clientWidth
         const containerHeight = containerRef.current.clientHeight
         const containerDims = Math.min(containerHeight, containerWidth)
-        console.log(containerDims)
         setRadius(containerDims / 350);
       }
     };
@@ -29,7 +26,7 @@ function FlagPole() {
       <ambientLight intensity={Math.PI / 2} />
       <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
       <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} />
-      <ActualFlagPole position={[0, 0, 0]} radius={radius} />
+      <ActualFlagPole position={[0, 0, 0]} radius={radius} poleQuaternion={poleQuaternion} setPoleQuaternion={setPoleQuaternion} setTrigger={setTrigger} />
     </Canvas>
   </div>
 }
