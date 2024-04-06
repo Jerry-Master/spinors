@@ -1,9 +1,9 @@
 import { React, useState, useRef, useEffect } from 'react'
-import { TextureLoader, Quaternion, Euler, DoubleSide, Vector3 } from 'three'
+import { TextureLoader, Quaternion, Euler, DoubleSide, Vector3, LineSegments, SphereGeometry } from 'three'
 import { useLoader } from '@react-three/fiber'
 import flagTexture from './Assets/jumbotron.jpg'
 
-function ActualFlagPole(props) {
+function ActualFlagPole({ position, radius}) {
   // Global state
   const clicked = useRef(false)
   const poleRef = useRef()
@@ -59,15 +59,15 @@ function ActualFlagPole(props) {
     }
   }, [])
 
-  const poleHeight = 2
-  const flagHeight = 0.6
+  const poleHeight = radius
+  const poleRadius = radius / 50
+  const flagHeight = poleHeight / 6
+  const flagWidth = 2 * flagHeight
 
   // Update Flag rotation on mouse wheel
-  const handleWheel = (e) => {
-    e.nativeEvent.preventDefault()
-    
+  const handleWheel = (e) => {    
     const deltaFlagQuaternion = new Quaternion()
-        .setFromEuler(new Euler(0, toRadians(e.deltaY * 0.3), 0, 'XYZ'))
+        .setFromEuler(new Euler(0, toRadians(e.deltaY * 0.001), 0, 'XYZ'))
 
     setPoleQuaternion((prev) => {
       poleRef.current.quaternion.multiplyQuaternions(prev, deltaFlagQuaternion)
@@ -77,22 +77,24 @@ function ActualFlagPole(props) {
 
   return (
     <mesh 
-      {...props} 
+      position={position} 
       onPointerDown={handlePointerDown}
       onWheel={handleWheel}
     >
       {/* Container Sphere */}
-      <sphereGeometry attach="geometry" args={[poleHeight, 32, 32]} />
-      <meshBasicMaterial attach="material" color="blue" wireframe />
+      <lineSegments>
+        <edgesGeometry attach="geometry" args={[new SphereGeometry(poleHeight, 32, 32)]} />
+        <lineBasicMaterial attach="material" color={0x555555} />
+      </lineSegments>
       {/* Group for moving center of rotation */}
       <group ref={poleRef} quaternion={poleQuaternion}>
         <mesh position={[0, poleHeight / 2, 0]}>
           {/* Pole */}
-          <cylinderGeometry attach="geometry" args={[0.1, 0.1, poleHeight, 32]} />
+          <cylinderGeometry attach="geometry" args={[poleRadius, poleRadius, poleHeight, 32]} />
           <meshStandardMaterial attach="material" color="#008000" />
           {/* Flag */}
-          <mesh position={[0.5, poleHeight / 2 - flagHeight / 2, 0]}>
-            <planeGeometry attach="geometry" args={[1, flagHeight]} />
+          <mesh position={[flagWidth / 2, poleHeight / 2 - flagHeight / 2, 0]}>
+            <planeGeometry attach="geometry" args={[flagWidth, flagHeight]} />
             <meshStandardMaterial map={texture} side={DoubleSide} />
           </mesh>
         </mesh>
