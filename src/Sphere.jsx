@@ -1,5 +1,5 @@
-import { useLoader } from '@react-three/fiber';
-import { TextureLoader } from 'three';
+import { useLoader, useThree } from '@react-three/fiber';
+import { TextureLoader, Euler, Matrix4 } from 'three';
 import { useState, useEffect, useRef } from 'react';
 import sphereTexture from './Assets/foto-rene.JPG'
 
@@ -11,16 +11,22 @@ function Sphere(props) {
   const texture = useLoader(TextureLoader, sphereTexture);
   
   // Random rotation state
-  const [rotation, setRotation] = useState([0, 0, 0]);
+  const [angleMat, setAngleMat] = useState([
+    new Euler(0, 0, 0, 'ZYX'),
+    new Matrix4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
+  ]);
 
   // Update rotation on mouse drag
   const handlePointerMove = (e) => {
     if (clicked.current){
-      setRotation(prevRotation => ([
-        prevRotation[0] + e.movementY * 0.01, 
-        prevRotation[1] + e.movementX * 0.01, 
-        0
-      ]))
+      setAngleMat(prevAngleMat => {
+        let deltaEuler = new Euler(e.movementY * 0.01, e.movementX * 0.01, 0, 'ZYX')
+        let deltaRotMatrix = new Matrix4()
+        deltaRotMatrix.makeRotationFromEuler(deltaEuler)
+        deltaRotMatrix.multiplyMatrices(prevAngleMat[1], deltaRotMatrix)
+        deltaEuler.setFromRotationMatrix(deltaRotMatrix)
+        return [deltaEuler, deltaRotMatrix]
+      })
     }
   };
 
@@ -52,7 +58,7 @@ function Sphere(props) {
     <mesh
       {...props}
       onPointerDown={handlePointerDown}
-      rotation={rotation}
+      rotation={angleMat[0]}
     >
       <sphereGeometry args={[1, 32, 32]} />
       <meshStandardMaterial map={texture} />
