@@ -1,32 +1,34 @@
-import { useLoader, useThree } from '@react-three/fiber';
-import { TextureLoader, Euler, Matrix4 } from 'three';
-import { useState, useEffect, useRef } from 'react';
+import { useLoader } from '@react-three/fiber'
+import { TextureLoader, Euler, Quaternion } from 'three'
+import { useState, useEffect, useRef } from 'react'
 import sphereTexture from './Assets/foto-rene.JPG'
 
 function Sphere(props) {
   // Global state
   const clicked = useRef(false)
+  const meshRef = useRef()
 
   // Load a texture
-  const texture = useLoader(TextureLoader, sphereTexture);
+  const texture = useLoader(TextureLoader, sphereTexture)
   
-  // Random rotation state
-  const [angleMat, setAngleMat] = useState([
-    new Euler(0, 0, 0, 'ZYX'),
-    new Matrix4(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1)
-  ]);
+  // Initial rotation state
+  const [rotationQuaternion, setRotationQuaternion] = useState(new Quaternion())
+  const toRadians = (angle) => angle * (Math.PI / 180);
 
   // Update rotation on mouse drag
   const handlePointerMove = (e) => {
     if (clicked.current){
-      setAngleMat(prevAngleMat => {
-        let deltaEuler = new Euler(e.movementY * 0.01, e.movementX * 0.01, 0, 'ZYX')
-        let deltaRotMatrix = new Matrix4()
-        deltaRotMatrix.makeRotationFromEuler(deltaEuler)
-        deltaRotMatrix.multiplyMatrices(prevAngleMat[1], deltaRotMatrix)
-        deltaEuler.setFromRotationMatrix(deltaRotMatrix)
-        return [deltaEuler, deltaRotMatrix]
-      })
+      let deltaX = e.movementX || e.mozMovementX || e.webkitMovementX || 0;
+      let deltaY = e.movementY || e.mozMovementY || e.webkitMovementY || 0;
+
+      const deltaRotationQuaternion = new Quaternion()
+        .setFromEuler(new Euler(toRadians(deltaY * 1.5), toRadians(deltaX * 1.5), 0, 'XYZ'));
+
+      setRotationQuaternion((prev) => {
+        let newRotation = new Quaternion().multiplyQuaternions(deltaRotationQuaternion, prev);
+        meshRef.current.quaternion.multiplyQuaternions(deltaRotationQuaternion, prev);
+        return newRotation;
+      });
     }
   };
 
@@ -57,8 +59,9 @@ function Sphere(props) {
   return (
     <mesh
       {...props}
+      ref={meshRef}
       onPointerDown={handlePointerDown}
-      rotation={angleMat[0]}
+      quaternion={rotationQuaternion}
     >
       <sphereGeometry args={[1, 32, 32]} />
       <meshStandardMaterial map={texture} />
